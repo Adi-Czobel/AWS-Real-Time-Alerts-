@@ -1,4 +1,26 @@
-# AWS GuardDuty Real-Time Alerts with EventBridge & SNS
+# AWS Real-Time Alerts: security and cost, over one SNS topic
+
+Two alerting paths in one account, built on the same delivery mechanism.
+
+| Path | Question it answers | Wiring | Where |
+|---|---|---|---|
+| **Security** | Is something attacking this account? | GuardDuty → EventBridge (severity >= 7) → SNS | this README, below |
+| **Cost** | Is something costing money that should not be? | Budgets and Cost Anomaly Detection → SNS | [`finops/`](finops/) |
+
+The cost path is a Python CLI with a `plan` mode that needs no credentials, an idempotent
+`deploy`, 11 stubbed tests and a least-privilege IAM policy. See
+[`finops/README.md`](finops/README.md).
+
+**The two paths are wired differently on purpose.** GuardDuty emits findings onto the
+EventBridge bus, so a rule is what filters them by severity. Budgets and Cost Anomaly
+Detection publish to SNS directly — there is no equivalent bus event for a rule to match,
+so their topic policy names `budgets.amazonaws.com` and `costalerts.amazonaws.com` rather
+than `events.amazonaws.com`. Assuming the security wiring transfers to cost is the easy
+mistake, and a test in `finops/` asserts it has not crept back in.
+
+---
+
+## Security path: GuardDuty → EventBridge → SNS
 
 ## Overview
 This project demonstrates how to configure **Amazon GuardDuty** to send real-time security finding alerts via **Amazon EventBridge** and **Amazon SNS**.  

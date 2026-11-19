@@ -1,0 +1,48 @@
+{
+  "Version": "2012-10-17",
+  "Comment": "Least-privilege policy for whoever runs finops_alerts.py. Budgets uses two coarse actions (ViewBudget covers describe, ModifyBudget covers create/update/delete) and Cost Explorer actions do not support resource-level restriction, so those are scoped by action rather than by resource. The SNS statement is scoped to the one topic.",
+  "Statement": [
+    {
+      "Sid": "IdentifyTheAccount",
+      "Effect": "Allow",
+      "Action": "sts:GetCallerIdentity",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ManageTheAlertTopicOnly",
+      "Effect": "Allow",
+      "Action": [
+        "sns:CreateTopic",
+        "sns:SetTopicAttributes",
+        "sns:GetTopicAttributes",
+        "sns:Subscribe",
+        "sns:ListSubscriptionsByTopic"
+      ],
+      "Resource": "arn:aws:sns:us-east-1:ACCOUNT_ID:aws-cost-alerts"
+    },
+    {
+      "Sid": "ManageBudgets",
+      "Effect": "Allow",
+      "Action": [
+        "budgets:ViewBudget",
+        "budgets:ModifyBudget"
+      ],
+      "Resource": "arn:aws:budgets::ACCOUNT_ID:budget/monthly-account-cost"
+    },
+    {
+      "Sid": "ManageCostAnomalyDetectionAndTags",
+      "Effect": "Allow",
+      "Action": [
+        "ce:CreateAnomalyMonitor",
+        "ce:GetAnomalyMonitors",
+        "ce:DeleteAnomalyMonitor",
+        "ce:CreateAnomalySubscription",
+        "ce:GetAnomalySubscriptions",
+        "ce:DeleteAnomalySubscription",
+        "ce:UpdateCostAllocationTagsStatus",
+        "ce:ListCostAllocationTags"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# Pinned explicitly rather than relying on ruff's defaults, which change between
+# releases - a lint config that drifts turns a green pipeline red on an unrelated day.
+line-length = 95
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "BLE", "PERF", "RUF", "SIM", "C4"]
+
+[lint.per-file-ignores]
+# The module lives beside its tests rather than in a package, so sys.path is adjusted
+# before the import. That is the reason for the import placement, not an oversight.
+"tests/*" = ["E402"]

@@ -1,0 +1,63 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  finops:
+    name: finops - lint, tests, plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+
+      - name: Install
+        working-directory: finops
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt ruff
+
+      - name: Lint
+        working-directory: finops
+        run: ruff check .
+
+      - name: Tests
+        working-directory: finops
+        # Stubbed against the real botocore service models, so a malformed request
+        # fails here rather than at deploy time. No AWS account, no credentials.
+        run: python -m pytest tests/ -q
+
+      - name: Plan must run without credentials
+        working-directory: finops
+        # Guards the promise the README makes: plan sends nothing and needs no account.
+        # If plan ever starts requiring credentials, this step fails.
+        env:
+          AWS_ACCESS_KEY_ID: ''
+          AWS_SECRET_ACCESS_KEY: ''
+        run: python finops_alerts.py plan --email ci@example.com --monthly-limit 20
+
+      - name: Validate the SNS topic policy is valid JSON and correctly scoped
+        working-directory: finops
+        run: |
+          python - <<'PY'
+          import json, finops_alerts as fa
+          pol = fa.topic_policy("arn:aws:sns:us-east-1:123456789012:t", "123456789012")
+          json.dumps(pol)
+          svc = pol["Statement"][0]["Principal"]["Service"]
+          assert set(svc) == {"budgets.amazonaws.com", "costalerts.amazonaws.com"}, svc
+          assert pol["Statement"][0]["Condition"]["StringEquals"]["aws:SourceAccount"]
+          print("topic policy ok")
+          PY
+
+      - name: IAM policy is valid JSON
+        working-directory: finops
+        run: python -c "import json; json.load(open('iam-policy.json')); print('iam policy ok')"
