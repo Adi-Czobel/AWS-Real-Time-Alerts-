@@ -93,6 +93,12 @@ python -m pytest tests/ -q     # 11 passed
 python -m ruff check .         # All checks passed!
 ```
 
+Both tools are version-pinned in `requirements.txt` - ruff exactly, pytest below the next
+major. An unpinned linter fails code that has not changed on the day it adds a rule, which
+is a red pipeline carrying no information. boto3 is deliberately left floating: the tests
+validate request shapes against the service models boto3 ships, so a newer boto3 is a
+stricter check rather than a flakier one.
+
 Every call is served by botocore's `Stubber`, which validates each request against the
 real service model — so a misspelled parameter or a wrong shape fails in CI rather than
 at deploy time. That is why the request builders are pure functions returning dicts: the

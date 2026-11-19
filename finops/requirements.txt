@@ -1,2 +1,15 @@
+# ruff is pinned exactly, on purpose. It adds lint rules in minor releases, so an
+# unpinned ruff means code that has not changed can fail the gate on an unrelated day.
+# Bumping this is a deliberate commit, with whatever fixes the new rules ask for.
+ruff==0.17.6
+
+# Capped below the next major: pytest 9 is free to break fixture and plugin behaviour,
+# and a test run that fails for that reason tells you nothing about this code.
+pytest>=8.0,<9
+
+# boto3 is deliberately NOT pinned. The tests assert request shapes through botocore's
+# Stubber, which validates them against the service models boto3 ships - so a newer
+# boto3 means newer models and a stricter check. That is the one dependency where
+# floating forward makes the suite better rather than flakier. The floor is the first
+# release carrying the cost-anomaly ThresholdExpression shape this code sends.
 boto3>=1.34
-pytest>=8.0

@@ -1,5 +1,8 @@
-# Pinned explicitly rather than relying on ruff's defaults, which change between
-# releases - a lint config that drifts turns a green pipeline red on an unrelated day.
+# The rule set is listed explicitly rather than inherited from ruff's defaults, which
+# change between releases. That half of the problem is solved here; the other half is the
+# ruff version itself, pinned in requirements.txt. Both are needed - an explicit rule set
+# under a floating ruff still reddens a green pipeline the day a rule is added to one of
+# the selected families.
 line-length = 95
 target-version = "py311"
 

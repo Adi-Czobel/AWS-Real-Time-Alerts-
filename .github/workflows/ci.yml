@@ -24,7 +24,9 @@ jobs:
         working-directory: finops
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt ruff
+          # ruff is pinned in requirements.txt - do not add it here unpinned, or the
+          # command line silently widens the constraint the pin exists to hold.
+          pip install -r requirements.txt
 
       - name: Lint
         working-directory: finops
